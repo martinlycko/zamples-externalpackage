@@ -36,10 +36,18 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const module = b.addModule("testmod", .{
+        .root_source_file = b.path("src/root.zig")
+    });
+    exe.root_module.addImport("testmod", module);
+    lib.root_module.addImport("testmod", module);
+
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default
     // step when running `zig build`).
     b.installArtifact(exe);
+    b.default_step.dependOn(&exe.step);
+    b.default_step.dependOn(&lib.step);
 
     // This *creates* a Run step in the build graph, to be executed when another
     // step is evaluated that depends on it. The next line below will establish
@@ -89,5 +97,4 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&run_lib_unit_tests.step);
     test_step.dependOn(&run_exe_unit_tests.step);
 
-    _ = b.addModule("testmod", .{});
 }
